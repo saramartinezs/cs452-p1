@@ -1,7 +1,24 @@
 #include <stdio.h>
+#include <unistd.h>
+#include "../src/lab.h"
 
-int main(void)
+int main(int argc, char ** argv)
 {
-  printf("hello world\n");
-  return 0;
+  
+  int opt;
+
+  /*Task 3: printing shell version*/
+  while ((opt = getopt(argc, argv, "v")) != -1) 
+  {
+    switch (opt) 
+  {
+    case 'v':
+      printf("Version %d.%d\n", lab_VERSION_MAJOR, lab_VERSION_MINOR);
+      break;
+    default:
+      abort();
+    } 
+  }
+
+  printf("Hello World!\n");
 }
