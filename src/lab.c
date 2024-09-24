@@ -1,10 +1,25 @@
-/**Update this file with the starter code**/
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "lab.h"
 
-  char *get_prompt(const char *env)
-  {
-    return 0;
+#define MAX_CHAR_LENGTH 20
+
+  char *get_prompt(const char *env) {
+    /* "getenv() function returns a pointer to the value in the
+       environment, or NULL if there is no match.""*/
+    char *prompt = getenv(env);
+
+    if (prompt == NULL) {
+        prompt = (char *) malloc(sizeof(char) * MAX_CHAR_LENGTH);
+        //strcpy(prompt, "shell>"); // Watch out for buffer overflow
+        strncpy(prompt, "shell>", MAX_CHAR_LENGTH); //use strncpy instead 
+    } else {
+        prompt = (char *) malloc(sizeof(char) * MAX_CHAR_LENGTH);
+        strncpy(prompt, getenv(env), MAX_CHAR_LENGTH);
+    }
+    return prompt;
+    free(prompt); //? 
   }
 
   int change_dir(char **dir)
