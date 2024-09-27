@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "lab.h"
 
@@ -57,7 +59,7 @@
 
     //chdir with given directory
     if (chdir(directory) != 0){
-      printf("cd: failed to change directory");
+      printf("cd: failed to change directory\n");
     } 
     return returnValue;
   }
@@ -126,29 +128,21 @@
     return line;
   }
 
-  /**
-   * Replaces all sequences of 2 or more spaces with a single space
-   * 
-   * userString - null terminated string
-  */
-  void shortenSpace(char userString[]){
-    for(size_t i = 0; i < strlen(userString) + 1; i++){
-        while(userString[i] == ' ' && (userString[i + 1] == ' ')){
-          for(size_t j = i + 1; j < strlen(userString) + 1; j++){
-              userString[j] = userString[j + 1];
-          }
-        } 
-    }
-  }
 
   //TASK 6
   //Use strcmp for keywords like exit and cd 
 
   bool do_builtin(struct shell *sh, char **argv)
   {
+    char cwd[1024];
     bool builtin = false; 
+    
+    if(argv[0] == NULL){
+      return;
+    }
+
     /*should deal with exit and EOF/ctrl-d*/
-    if(strcmp(argv[0], "exit") == 0){ // Not sure if this is done ... 
+    if(strcmp(argv[0], "exit") == 0){ // TO DO: add ctrl-d?
       builtin = true; 
       sh_destroy(sh);
       exit(0);
@@ -157,6 +151,18 @@
       builtin = true; 
       change_dir(argv);
 
+    } else if(strcmp(argv[0], "pwd") == 0) {
+      builtin = true;
+      getcwd(cwd, sizeof(cwd));
+      printf("%s\n", cwd);
+    } else if(strcmp(argv[0], "history") == 0) {
+      builtin = true;
+      //history stuff
+      HIST_ENTRY **the_history_list =  history_list();
+       for (int i = 0; the_history_list[i] != NULL; i++ ){
+        printf("%s\n", the_history_list[i]->line);
+      }
+
     }
     return builtin;
   }
@@ -164,13 +170,13 @@
 
   void sh_init(struct shell *sh){
     /* Allocate space for the shell and initialize it */
-    sh = (struct shell *)malloc(sizeof(struct shell));
+    // sh = (struct shell *)malloc(sizeof(struct shell));
 
     /* Initializing */
     sh->shell_is_interactive = 1;
     sh->shell_pgid = 0; 
-    //sh->shell_tmodes = ? //idk what the termios thing is //TO DO 
-    sh->shell_terminal = 1;
+    sh->shell_tmodes.c_iflag = 0; //idk what the termios thing is //TO DO 
+    sh->shell_terminal = 1; 
     sh->prompt = NULL;
   }
 
@@ -179,9 +185,7 @@
     free(sh);
   }
 
-  void parse_args(int argc, char **argv){
-
-  }
+  void parse_args(int argc, char **argv);
 
 
 
