@@ -10,7 +10,7 @@ int main(int argc, char ** argv)
 {
   
   int opt; 
-  struct shell sh;
+  struct shell *sh = (struct shell *)malloc(sizeof(struct shell));
   char * prompt = "";
   char *line;
 
@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
 
   
 
-  //sh_init(&sh);
+  sh_init(sh);
   prompt = get_prompt("MY_PROMPT");
   //sh.prompt = prompt;
 
@@ -39,12 +39,18 @@ int main(int argc, char ** argv)
   using_history();
 
   while ((line=readline(prompt))){
-      printf("%s\n",line);
+      // printf("%s\n",line);
+
       add_history(line);
+      line = trim_white(line);
+
+      char **commandParsed = cmd_parse(line);
+      bool builtIn = do_builtin(sh, commandParsed);
+      cmd_free(commandParsed);
       free(line);
   }
 
-  
+  free(sh);
 
   
 
