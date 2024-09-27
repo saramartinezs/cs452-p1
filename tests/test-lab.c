@@ -32,9 +32,12 @@ void test_cmd_parse2(void)
      TEST_ASSERT_EQUAL_STRING(expected[0],actual[0]);
      TEST_ASSERT_EQUAL_STRING(expected[1],actual[1]);
      TEST_ASSERT_FALSE(actual[2]);
-     free(expected[0]);
-     free(expected[1]);
-     free(expected);
+     // free(expected[0]);
+     // free(expected[1]);
+     free(stng);
+     cmd_free(expected);
+     cmd_free(actual);
+     //free(expected);  /*** TEST WAS CHANGED FOR PROPER MEMORY DEALLOCATION ****/
 }
 
 void test_cmd_parse(void)
@@ -161,18 +164,18 @@ void test_ch_dir_root(void)
 
 int main(void) {
   UNITY_BEGIN();
-//   RUN_TEST(test_cmd_parse);
-//   RUN_TEST(test_cmd_parse2);
-//   RUN_TEST(test_trim_white_no_whitespace);
-//   RUN_TEST(test_trim_white_start_whitespace);
-//   RUN_TEST(test_trim_white_end_whitespace);
-//   RUN_TEST(test_trim_white_both_whitespace_single);
-//   RUN_TEST(test_trim_white_both_whitespace_double);
-//   RUN_TEST(test_trim_white_all_whitespace);
+  RUN_TEST(test_cmd_parse);
+  RUN_TEST(test_cmd_parse2);
+  RUN_TEST(test_trim_white_no_whitespace);
+  RUN_TEST(test_trim_white_start_whitespace);
+  RUN_TEST(test_trim_white_end_whitespace);
+  RUN_TEST(test_trim_white_both_whitespace_single);
+  RUN_TEST(test_trim_white_both_whitespace_double);
+  RUN_TEST(test_trim_white_all_whitespace);
   RUN_TEST(test_get_prompt_default);
   RUN_TEST(test_get_prompt_custom);
-//   RUN_TEST(test_ch_dir_home);
-//   RUN_TEST(test_ch_dir_root);
+  RUN_TEST(test_ch_dir_home);
+  RUN_TEST(test_ch_dir_root);
 
   return UNITY_END();
 }

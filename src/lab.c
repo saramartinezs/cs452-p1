@@ -1,6 +1,16 @@
+/**
+ * Author: Sara Martinez Soto
+ * Date: Tue Sep 24 12:38:08 PM 2024
+ * Description: Implementation of lab.h
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <pwd.h>
+
 #include "lab.h"
 
 #define MAX_CHAR_LENGTH 20
@@ -23,37 +33,150 @@
   }
 
   int change_dir(char **dir)
-  {
-    return 0;
+  { 
+    char *directory = dir[1];
+    int returnValue = 0; 
+
+    //Get Home directory - First attempt with getenv
+    if(directory == NULL && getenv("HOME") != NULL){
+      returnValue = chdir(getenv("HOME"));
+      return returnValue;
+    }
+
+    //If getenv doesn't work, then attempt with getuid & getpwuid
+    if(directory == NULL && getenv("HOME") == NULL){
+      struct passwd *pwd = getpwuid(getuid());
+      if(pwd == NULL){
+        perror("cd: Failed to get home directory\n");
+        return -1;
+      } else {
+        returnValue = chdir(pwd->pw_dir); 
+        return returnValue;
+      }
+    }
+
+    //chdir with given directory
+    if (chdir(directory) != 0){
+      printf("cd: failed to change directory");
+    } 
+    return returnValue;
   }
 
   char **cmd_parse(char const *line)
   {
-    return 0;
+    char *lineDuplicate = strdup(line); // Create a copy of line 
+    trim_white(lineDuplicate);
+    char *token = ""; 
+
+    int argLimit = sysconf(_SC_ARG_MAX);
+    char **parsedLine = (char **) malloc(sizeof(char *) * argLimit); // array of string kinda
+
+    if(lineDuplicate == NULL){
+      return NULL;
+    }
+
+    token = strtok(lineDuplicate, " ");
+    int i = 0;
+    while(token != NULL){
+      parsedLine[i] = strdup(token);
+      i++;
+      token = strtok(NULL, " ");
+    }
+    parsedLine[i] = NULL;
+
+    free(lineDuplicate);
+    return parsedLine;
   }
 
   void cmd_free(char ** line)
   {
-
+    int i = 0;
+    while(line[i] != NULL){ // Each char* needs to be freed
+      free(line[i]);
+      i++;
+    }
+    free(line);
   }
 
   char *trim_white(char *line)
   {
-    return 0;
+    int i = 0;
+    int j;
+
+    //Iterating through line until there's no more whitespace chars 
+    while (line[i] == ' ' || line[i] == '\t' || line[i] == '\n'){
+        i++;
+    }
+ 
+   // Shift all characters to the left and add null termination to string
+    while (line[i] != '\0'){
+        line[j] = line[i];
+        i++;
+        j++;
+    }
+    line[j] = '\0';
+
+    //Remove all trailing whitespace
+    i = strlen(line) - 1; 
+    while(i >= 0 && isspace(line[i])){
+      line[i] = '\0';//null terminated string!
+      i--;
+    }
+
+    return line;
   }
+
+  /**
+   * Replaces all sequences of 2 or more spaces with a single space
+   * 
+   * userString - null terminated string
+  */
+  void shortenSpace(char userString[]){
+    for(size_t i = 0; i < strlen(userString) + 1; i++){
+        while(userString[i] == ' ' && (userString[i + 1] == ' ')){
+          for(size_t j = i + 1; j < strlen(userString) + 1; j++){
+              userString[j] = userString[j + 1];
+          }
+        } 
+    }
+  }
+
+  //TASK 6
+  //Use strcmp for keywords like exit and cd 
 
   bool do_builtin(struct shell *sh, char **argv)
   {
-    return false;
+    bool builtin = false; 
+    /*should deal with exit and EOF/ctrl-d*/
+    if(strcmp(argv[0], "exit") == 0){ // Not sure if this is done ... 
+      builtin = true; 
+      sh_destroy(sh);
+      exit(0);
+      
+    } else if (strcmp(argv[0], "cd") == 0){
+      builtin = true; 
+      change_dir(argv);
+
+    }
+    return builtin;
   }
 
 
   void sh_init(struct shell *sh){
+    /* Allocate space for the shell and initialize it */
+    sh = (struct shell *)malloc(sizeof(struct shell));
 
+    /* Initializing */
+    sh->shell_is_interactive = 1;
+    sh->shell_pgid = 0; 
+    //sh->shell_tmodes = ? //idk what the termios thing is //TO DO 
+    sh->shell_terminal = 1;
+    sh->prompt = NULL;
   }
 
   void sh_destroy(struct shell *sh){
-
+    free(sh->prompt);
+    free(sh);
   }
 
   void parse_args(int argc, char **argv){
