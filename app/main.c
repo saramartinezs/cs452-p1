@@ -1,7 +1,13 @@
+/**
+ * Author: Sara Martinez Soto
+ * Date: Tue Sep 24 12:38:08 PM 2024
+ * Description: Simple shell program
+*/
 #include <stdio.h>
 #include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <sys/wait.h>
 
 
 #include "../src/lab.h"
@@ -15,10 +21,8 @@ int main(int argc, char ** argv)
   char *line;
 
   /*Task 3: printing shell version*/
-  while ((opt = getopt(argc, argv, "v")) != -1) 
-  {
-    switch (opt) 
-  {
+  while ((opt = getopt(argc, argv, "v")) != -1) {
+    switch (opt) {
     case 'v':
       printf("Version %d.%d\n", lab_VERSION_MAJOR, lab_VERSION_MINOR);
       break;
@@ -27,31 +31,49 @@ int main(int argc, char ** argv)
     } 
   }
 
-  
-
   sh_init(sh);
   prompt = get_prompt("MY_PROMPT");
-  //sh.prompt = prompt;
-
-  //printf("Hello World!\n");
 
   /* Dealing with the user's input */
   using_history();
 
   while ((line=readline(prompt))){
-      // printf("%s\n",line);
-
       add_history(line);
       line = trim_white(line);
 
       char **commandParsed = cmd_parse(line);
-      bool builtIn = do_builtin(sh, commandParsed);
+      // do_builtin(sh, commandParsed);
+      if(!do_builtin(sh, commandParsed)){
+        pid_t pid;
+        pid = fork();
+
+        if (pid < 0) {
+          // Error handling
+          fprintf(stderr, "Fork failed\n");
+          exit(1);
+        } else if (pid == 0) { 
+          // Child process
+          // printf("In child process\n");
+          if(commandParsed[0] == NULL) {
+            continue;
+          }
+          execvp( commandParsed[0], commandParsed);
+          
+        } else {
+          // Parent process
+          // printf("In parent process\n");
+          int *status = 0; 
+          waitpid(pid, status, 0); // Wait for child process to finish
+          // printf("done waiting\n");
+        }
+     
+      }
+      
       cmd_free(commandParsed);
       free(line);
+      printf("\n");
   }
 
   free(sh);
-
-  
 
 }

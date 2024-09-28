@@ -70,7 +70,7 @@
     trim_white(lineDuplicate);
     char *token = ""; 
 
-    int argLimit = sysconf(_SC_ARG_MAX);
+    long argLimit = sysconf(_SC_ARG_MAX);
     char **parsedLine = (char **) malloc(sizeof(char *) * argLimit); // array of string kinda
 
     if(lineDuplicate == NULL){
@@ -137,12 +137,13 @@
     char cwd[1024];
     bool builtin = false; 
     
-    if(argv[0] == NULL){
-      return;
-    }
+    // if(argv[0] == NULL){
+    //   return;
+    // }
 
     /*should deal with exit and EOF/ctrl-d*/
     if(strcmp(argv[0], "exit") == 0){ // TO DO: add ctrl-d?
+      cmd_free(argv);
       builtin = true; 
       sh_destroy(sh);
       exit(0);
@@ -157,7 +158,6 @@
       printf("%s\n", cwd);
     } else if(strcmp(argv[0], "history") == 0) {
       builtin = true;
-      //history stuff
       HIST_ENTRY **the_history_list =  history_list();
        for (int i = 0; the_history_list[i] != NULL; i++ ){
         printf("%s\n", the_history_list[i]->line);
@@ -170,9 +170,9 @@
 
   void sh_init(struct shell *sh){
     /* Allocate space for the shell and initialize it */
-    // sh = (struct shell *)malloc(sizeof(struct shell));
+    // sh = (struct shell *)malloc(sizeof(struct shell)); // actually doing this in main
 
-    /* Initializing */
+    /* Initializing - not too sure about some of this*/
     sh->shell_is_interactive = 1;
     sh->shell_pgid = 0; 
     sh->shell_tmodes.c_iflag = 0; //idk what the termios thing is //TO DO 
