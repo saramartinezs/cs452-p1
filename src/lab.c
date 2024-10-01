@@ -21,18 +21,18 @@
   char *get_prompt(const char *env) {
     /* "getenv() function returns a pointer to the value in the
        environment, or NULL if there is no match.""*/
-    char *prompt = getenv(env);
+    char *env_prompt = getenv(env);
+    char *prompt = (char *) malloc(sizeof(char) * MAX_CHAR_LENGTH);
 
-    if (prompt == NULL) {
-        prompt = (char *) malloc(sizeof(char) * MAX_CHAR_LENGTH);
+    if (env_prompt == NULL) {
         //strcpy(prompt, "shell>"); // Watch out for buffer overflow
         strncpy(prompt, "shell>", MAX_CHAR_LENGTH); //use strncpy instead 
     } else {
-        prompt = (char *) malloc(sizeof(char) * MAX_CHAR_LENGTH);
-        strncpy(prompt, getenv(env), MAX_CHAR_LENGTH);
+        strncpy(prompt, env_prompt, MAX_CHAR_LENGTH - 1);
     }
+    
+    prompt[MAX_CHAR_LENGTH - 1] = '\0';
     return prompt;
-    free(prompt); //? 
   }
 
   int change_dir(char **dir)

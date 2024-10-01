@@ -10,8 +10,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-
-
 #include "../src/lab.h"
 
 int main(int argc, char ** argv)
@@ -35,6 +33,7 @@ int main(int argc, char ** argv)
 
   sh_init(sh);
   prompt = get_prompt("MY_PROMPT");
+  sh->prompt = prompt;
 
   /* Dealing with the user's input */
   using_history();
@@ -64,11 +63,14 @@ int main(int argc, char ** argv)
           signal (SIGTSTP, SIG_DFL);
           signal (SIGTTIN, SIG_DFL);
           signal (SIGTTOU, SIG_DFL);
-          if(commandParsed[0] == NULL) {
-            continue;
+
+          if(commandParsed[0] == NULL) { //EOF/CTRL+D
+            free(line);
+            cmd_free(commandParsed);
+            break;
           }
+
           execvp( commandParsed[0], commandParsed);
-          
         } else {
           // Parent process
           // printf("In parent process\n");
@@ -84,7 +86,6 @@ int main(int argc, char ** argv)
       free(line);
       printf("\n");
   }
-
-  free(sh);
+  sh_destroy(sh);
 
 }
