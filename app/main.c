@@ -8,6 +8,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <sys/wait.h>
+#include <signal.h>
+
 
 
 #include "../src/lab.h"
@@ -54,6 +56,14 @@ int main(int argc, char ** argv)
         } else if (pid == 0) { 
           // Child process
           // printf("In child process\n");
+          pid_t child = getpid();
+          setpgid(child, child);
+          tcsetpgrp(sh->shell_terminal, child); //transfers terminal control to the child process
+          signal (SIGINT, SIG_DFL);
+          signal (SIGQUIT, SIG_DFL);
+          signal (SIGTSTP, SIG_DFL);
+          signal (SIGTTIN, SIG_DFL);
+          signal (SIGTTOU, SIG_DFL);
           if(commandParsed[0] == NULL) {
             continue;
           }
@@ -64,6 +74,7 @@ int main(int argc, char ** argv)
           // printf("In parent process\n");
           int *status = 0; 
           waitpid(pid, status, 0); // Wait for child process to finish
+          tcsetpgrp(sh->shell_terminal, sh->shell_pgid); // Reclaiming terminal control after child is done
           // printf("done waiting\n");
         }
      
