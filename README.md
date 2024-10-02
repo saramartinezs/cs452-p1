@@ -1,4 +1,4 @@
-# Makefile Project Template
+# CS 452 - Project 1: Simple Shell Program
 
 Steps to configure, build, run, and test the project.
 
