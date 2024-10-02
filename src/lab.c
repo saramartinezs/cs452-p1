@@ -104,7 +104,7 @@
   char *trim_white(char *line)
   {
     int i = 0;
-    int j;
+    int j = 0;
 
     //Iterating through line until there's no more whitespace chars 
     while (line[i] == ' ' || line[i] == '\t' || line[i] == '\n'){
